@@ -14,8 +14,8 @@ from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.prompts import PromptTemplate
 import streamlit as st
 
-st.set_page_config(page_title="Negotiation Mastery", page_icon="🚀")
-st.title("🚀 Negotiation Mastery")
+st.set_page_config(page_title="Salary Negotiation Mastery", page_icon="💰")
+st.title("💰 Salary Negotiation Mastery")
 
 """
 Negotiation is a fundamental skill that shapes outcomes in personal and professional interactions. 
