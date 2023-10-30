@@ -1,4 +1,4 @@
-# IS833_NegotiationMastery
+# NegotiationMastery
 
 ## Background
 Negotiation is a fundamental skill that shapes outcomes in personal and professional interactions. It can mean the difference between landing a higher salary, closing a critical business deal, or successfully resolving conflicts. However, many individuals find negotiation daunting and struggle to develop their negotiation prowess. 
