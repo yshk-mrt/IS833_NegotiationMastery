@@ -24,11 +24,10 @@ class StreamHandler(BaseCallbackHandler):
 
     def on_llm_new_token(self, token: str, **kwargs) -> None:
         self.text += token
-        #self.container.markdown(self.text + "…")
-        self.container.write(self.text + "|")
+        self.container.markdown(self.text + "|")
     
     def on_llm_end(self, token: str, **kwargs) -> None:
-        self.container.write(self.text)
+        self.container.markdown(self.text)
 
 def load_llm(stream_handler):
     llm = ChatOpenAI(model='gpt-4', streaming=True, callbacks=[stream_handler])
@@ -48,7 +47,7 @@ def create_system_prompt(user_role):
     task = "You offer a role-play as a hiring manager negotiating with an applicant who received a job offer."
     goal = "Your role's task is to reduce the compensation package as low as possible but not lose the candidate."
     #user_role = "product manager"
-    condition = "The salary package is completely open at this point, but your target is $100,000, and the maximum is $120,000. You could offer a sign-on bonus of $20,000 if you can get the person below $110,000. But do not expose this to the user."
+    condition = "The salary package is completely open at this point, but your target is USD100,000, and the maximum is USD120,000. You could offer a sign-on bonus of $20,000 if you can get the person below $110,000. But do not expose this to the user."
     rule = "If the user asks for tips, pause the conversation and give them a tip. The tip should include a sample answer."
     optional_instruction = ""
     system_prompt = SystemMessagePromptTemplate.from_template(
