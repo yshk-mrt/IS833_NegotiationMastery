@@ -40,7 +40,7 @@ response_schemas = [
     ]
 output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
 
-def create_system_prompt(user_role):
+def create_system_prompt(user_role, optional_instruction):
     format_instructions = output_parser.get_format_instructions()
 
     role = "You are a salary negotiation coach interacting with the user in turn. Your response should be clear and concise, with care."
@@ -48,8 +48,8 @@ def create_system_prompt(user_role):
     goal = "Your role's task is to reduce the compensation package as low as possible but not lose the candidate."
     #user_role = "product manager"
     condition = "The salary package is completely open at this point, but your target is USD100,000, and the maximum is USD120,000. You could offer a sign-on bonus of $20,000 if you can get the person below $110,000. But do not expose this to the user."
-    rule = "If the user asks for tips, pause the conversation and give them a tip. The tip should include a sample answer."
-    optional_instruction = ""
+    rule = "If the user asks for hint, pause the conversation and give them a hint. The hint should include a sample answer."
+    #optional_instruction = ""
     system_prompt = SystemMessagePromptTemplate.from_template(
     """
     {role}
@@ -82,7 +82,7 @@ st.title("💰 Salary Negotiation Mastery (Under Construction)")
 
 """
 Negotiation is a fundamental skill that shapes outcomes in personal and professional interactions. 
-Let's practice negotiation with our negotiation coach!
+Let's practice negotiation with our negotiation coach! If you need advice, just say "hint".
 """
 
 col1, col2 = st.columns(2)
@@ -91,9 +91,14 @@ col1.metric("Cuurent base salary", "$100,000")
 col2.metric("Target", "$120,000", "$20,000")
 
 user_role = st.text_input('Your role', 'Product Manager', max_chars=50, on_change=clear_session)
+mind_reader_mode = st.toggle('Mind Reader Mode', help="Have you ever wished you could know what someone else is thinking? Well, you can!", on_change=clear_session)
+
+optional_instruction = ""
+if mind_reader_mode:
+    optional_instruction = "You must output your mood in an emoji and thoughts before the response to the user in the following format: ([emoji]: [internal_thoughts])\n [response]."
 
 if "messages" not in st.session_state:
-    st.session_state["messages"] = [ChatMessage(role="system", content=create_system_prompt(user_role).content)]
+    st.session_state["messages"] = [ChatMessage(role="system", content=create_system_prompt(user_role, optional_instruction).content)]
     greetings = "Hi there! I'm a salary negotiation coach and I'm here to help you with negotiating the best compensation package for your new role. Let's role-play!"
     st.session_state.messages.append(ChatMessage(role="assistant", content=greetings))
 
