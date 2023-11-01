@@ -78,7 +78,7 @@ def clear_session():
    st.session_state.clear()
 
 st.set_page_config(page_title="Salary Negotiation Mastery", page_icon="💰")
-st.title("💰 Salary Negotiation Mastery (Under Construction)")
+st.title("💰 Salary Negotiation Mastery β")
 
 """
 Negotiation is a fundamental skill that shapes outcomes in personal and professional interactions. 
