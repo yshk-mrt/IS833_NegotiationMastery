@@ -31,3 +31,11 @@ In our pursuit to foster an enriching learning environment, we're constantly evo
 Our commitment is clear: Equip you with exceptional negotiation skills in the most engaging and effective way possible. With our cutting-edge AI-driven platform, master the art of negotiation like never before.
 """
 )
+
+
+# PDF uploader
+uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
+
+if uploaded_file is not None:
+    pdf_file = uploaded_file.read()
+    # perform operation on pdf_file
