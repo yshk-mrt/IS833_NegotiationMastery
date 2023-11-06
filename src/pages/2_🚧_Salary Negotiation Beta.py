@@ -120,3 +120,9 @@ if prompt := st.chat_input():
     #st.chat_message("ai").write("(" + parsed_json["mood"] + ": " + parsed_json["thought"] + ") " + parsed_json["answer"]) 
     
 
+# PDF uploader
+uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
+
+if uploaded_file is not None:
+    pdf_file = uploaded_file.read()
+    # perform operation on pdf_file
