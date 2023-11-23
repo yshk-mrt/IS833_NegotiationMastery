@@ -13,7 +13,6 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-
 from langchain.llms import OpenAI
 from langchain.agents import AgentType, initialize_agent, load_tools
 from langchain.callbacks import StreamlitCallbackHandler
@@ -23,6 +22,8 @@ from langchain.globals import set_debug
 from langchain.output_parsers import OutputFixingParser
 from langchain.schema import OutputParserException
 import random
+from typing import Any, Dict, List, Union
+from langchain.schema import AgentAction
 #set_debug(True)
 
 openai.api_key = os.environ.get('OPENAI_API_KEY')
@@ -39,8 +40,6 @@ class StreamHandler(BaseCallbackHandler):
     def on_llm_end(self, token: str, **kwargs) -> None:
         self.container.markdown(self.text)
 
-from typing import Any, Dict, List, Union
-from langchain.schema import AgentAction
 class SalarySearchHandler(BaseCallbackHandler):
     def __init__(self, placeholder, initial_text="Thinking"):
         self.placeholder = placeholder
@@ -71,13 +70,6 @@ class SalarySearchHandler(BaseCallbackHandler):
 def load_llm(stream_handler):
     llm = ChatOpenAI(model='gpt-4', streaming=True, callbacks=[stream_handler])
     return llm
-
-response_schemas = [
-        ResponseSchema(name="thought", description="internal thoughts to the user's question"),
-        ResponseSchema(name="mood", description="an emoji to express your mood"),
-        ResponseSchema(name="answer", description="answer to the user's question"),
-    ]
-output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
 
 def create_system_prompt(user_role, optional_instruction):
     salary_multiplier = st.session_state.salary_multiplier
@@ -120,14 +112,6 @@ def create_system_prompt(user_role, optional_instruction):
                 #format_instructions=format_instructions),
     return system_prompt
 
-salary_response_schemas = [
-        ResponseSchema(name="min", description="minimum salary for the role"),
-        ResponseSchema(name="max", description="maximum salary for the role"),
-        ResponseSchema(name="average", description="average salary for the role"),
-    ]
-salary_output_parser = StructuredOutputParser.from_response_schemas(salary_response_schemas)
-format_instructions = salary_output_parser.get_format_instructions()
-
 def create_salary_search_prompt(user_role):
     role = "You are a helpful tool to find salary range for jobs."
     task = "You will find salary info for a given job."
@@ -147,9 +131,6 @@ def create_salary_search_prompt(user_role):
                 user_role=user_role,
                 format_instructions=format_instructions)
     return system_prompt
-
-def clear_session():
-   st.session_state.clear()
 
 def get_salary(container):
     #stream_handler = StreamHandler(st.empty())
@@ -179,7 +160,6 @@ def get_salary(container):
             parsed_json = new_parser.parse(response)
         
         st.session_state.min_salary = parsed_json["min"]
-        #st.session_state.min_salary = st.session_state.col_min
         st.session_state.max_salary = parsed_json["max"]
         st.session_state.average_salary = parsed_json["average"]
         container.markdown("Here, I found the salary information!")
@@ -193,15 +173,16 @@ def delete_history():
     if "messages" in st.session_state:
             del st.session_state["messages"]
 
-st.set_page_config(page_title="Salary Negotiation Mastery", page_icon="💰")
-st.title("💰 Salary Negotiation Mastery β")
+def mark_role_change():
+    st.session_state["role_changed"] = True
 
-"""
-Negotiation is a fundamental skill that shapes outcomes in personal and professional interactions. 
-Let's practice negotiation with our negotiation coach! If you need advice, just say "hint".
-"""
-
-mind_reader_mode = st.toggle('Mind Reader Mode', help="Have you ever wished you could know what someone else is thinking? Well, you can!", on_change=delete_history)
+salary_response_schemas = [
+        ResponseSchema(name="min", description="minimum salary for the role"),
+        ResponseSchema(name="max", description="maximum salary for the role"),
+        ResponseSchema(name="average", description="average salary for the role"),
+    ]
+salary_output_parser = StructuredOutputParser.from_response_schemas(salary_response_schemas)
+format_instructions = salary_output_parser.get_format_instructions()
 
 if 'role_changed' not in st.session_state:
     st.session_state['role_changed'] = False
@@ -212,9 +193,15 @@ if 'salary_multiplier' not in st.session_state:
 if 'sign_on_bonus_ratio_to_base_salary' not in st.session_state:
     st.session_state['sign_on_bonus_ratio_to_base_salary'] = random.randint(0, 20)
 
-def mark_role_change():
-    st.session_state["role_changed"] = True
+st.set_page_config(page_title="Salary Negotiation Mastery", page_icon="💰")
+st.title("💰 Salary Negotiation Mastery β")
 
+"""
+Negotiation is a fundamental skill that shapes outcomes in personal and professional interactions. 
+Let's practice negotiation with our negotiation coach! If you need advice, just say "hint".
+"""
+
+mind_reader_mode = st.toggle('Mind Reader Mode', help="Have you ever wished you could know what someone else is thinking? Well, you can!", on_change=delete_history)
 user_role = st.text_input('Your role', 'Product Manager', max_chars=50, key="user_role", on_change=mark_role_change)
 
 if st.session_state.role_changed:
@@ -222,12 +209,11 @@ if st.session_state.role_changed:
         get_salary(st.empty())
         st.session_state.role_changed = False
         delete_history()
-        #st.session_state.messages.append(ChatMessage(role="assistant", content=response))
-        
+
 col1, col2, col3 = st.columns(3)
-col1.text_input('Minimum Salary', '$80,000', key="min_salary", max_chars=12, on_change=delete_history)
-col2.text_input('Maximum Salary', '$200,000', key="max_salary", max_chars=12, on_change=delete_history)
-col3.text_input('Average Salary', '$12,000', key="average_salary", max_chars=12, on_change=delete_history)
+col1.text_input('Minimum Salary', '$80,000', key="min_salary", max_chars=20, on_change=delete_history)
+col2.text_input('Maximum Salary', '$200,000', key="max_salary", max_chars=20, on_change=delete_history)
+col3.text_input('Average Salary', '$12,000', key="average_salary", max_chars=20, on_change=delete_history)
 
 optional_instruction = ""
 if mind_reader_mode:
@@ -249,7 +235,7 @@ if prompt := st.chat_input():
         stream_handler = StreamHandler(st.empty())
         llm = load_llm(stream_handler)
         response = llm(st.session_state.messages)
-        st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\\$")))
+        st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
 
 # PDF uploader
 uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
