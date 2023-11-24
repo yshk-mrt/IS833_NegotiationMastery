@@ -86,7 +86,7 @@ def create_system_prompt(user_role, optional_instruction):
     #user_role = "product manager"
     condition = f"The basic salary info is available: the minimum salary is {min_salary}, the maximum salary is {max_salary}, the average salary is {average_salary}. The salary package is open at this point, but your target is {salary_multiplier} percent from the average. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary. But do not expose this to the user."
     #condition = "The salary package is completely open at this point, but your target is USD100,000, and the maximum is USD120,000. You could offer a sign-on bonus of $20,000 if you can get the person below $110,000. But do not expose this to the user."
-    rule = "If the user asks for hint, pause the conversation and give them a hint. The hint should include a sample answer."
+    rule = "If the user asks for hint, pause the conversation and provide tips to increase chances to receive the better compensation package. The hint must include a sample answer."
     #optional_instruction
     system_prompt = SystemMessagePromptTemplate.from_template(
     """
@@ -188,7 +188,7 @@ if 'role_changed' not in st.session_state:
     st.session_state['role_changed'] = False
 
 if 'salary_multiplier' not in st.session_state:
-    st.session_state['salary_multiplier'] = random.randint(-20, 40)
+    st.session_state['salary_multiplier'] = random.randint(60, 150)
 
 if 'sign_on_bonus_ratio_to_base_salary' not in st.session_state:
     st.session_state['sign_on_bonus_ratio_to_base_salary'] = random.randint(0, 20)
