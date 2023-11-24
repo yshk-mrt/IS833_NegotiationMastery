@@ -34,7 +34,7 @@ class StreamHandler(BaseCallbackHandler):
         self.text = initial_text
 
     def on_llm_new_token(self, token: str, **kwargs) -> None:
-        self.text += token
+        self.text += token.replace("$", r"\$")
         self.container.markdown(self.text + "|")
     
     def on_llm_end(self, token: str, **kwargs) -> None:
@@ -213,7 +213,7 @@ if st.session_state.role_changed:
 col1, col2, col3 = st.columns(3)
 col1.text_input('Minimum Salary', '$80,000', key="min_salary", max_chars=20, on_change=delete_history)
 col2.text_input('Maximum Salary', '$200,000', key="max_salary", max_chars=20, on_change=delete_history)
-col3.text_input('Average Salary', '$12,000', key="average_salary", max_chars=20, on_change=delete_history)
+col3.text_input('Average Salary', '$120,000', key="average_salary", max_chars=20, on_change=delete_history)
 
 optional_instruction = ""
 if mind_reader_mode:
@@ -231,6 +231,46 @@ for msg in st.session_state.messages:
 if prompt := st.chat_input():
     st.session_state.messages.append(ChatMessage(role="user", content=prompt))
     st.chat_message("user").write(prompt)
+    with st.chat_message("assistant"):
+        stream_handler = StreamHandler(st.empty())
+        llm = load_llm(stream_handler)
+        response = llm(st.session_state.messages)
+        st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
+
+if st.button("Create Report"):
+    prompt = """
+Generate a detailed report in Markdown table format on a job candidate's performance in a salary negotiation training session. Include the following sections:
+
+Negotiation Scenario:
+
+Role, Starting Offer, Target Salary, Industry Benchmark(minimum, maximum, average)
+Negotiation Strategy:
+
+Approach, Key Points Raised, Responses to Counteroffers
+Outcome:
+
+Final Offer Details (Base Salary, Bonuses, Benefits, Other Perks)
+Skills Assessment:
+
+Communication Skills, Confidence Level, Preparation and Research, Problem-Solving and Creativity, Emotional Intelligence
+Strengths and Areas for Improvement:
+
+List key strengths and areas where improvement is needed
+Trainer/Coach Feedback:
+Detailed feedback with suggestions for improvement
+
+Additional Comments:
+
+Any other relevant observations
+Please use a clear and concise one table format for each section, providing a comprehensive and organized report.
+If the conversation history is not enought, tell that it needs more conversation to generate the report.
+Example:
+| Category               | Subcategory           | Details                                    |
+|------------------------|-----------------------|--------------------------------------------|
+| **Negotiation Scenario** | Role                  | Product Manager                            |
+|                        | Starting Offer        | $110,000                                   |
+"""
+    st.session_state.messages.append(ChatMessage(role="system", content=prompt))
     with st.chat_message("assistant"):
         stream_handler = StreamHandler(st.empty())
         llm = load_llm(stream_handler)
