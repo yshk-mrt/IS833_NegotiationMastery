@@ -24,9 +24,21 @@ from langchain.schema import OutputParserException
 import random
 from typing import Any, Dict, List, Union
 from langchain.schema import AgentAction
+
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.schema import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage
+)
+
 #set_debug(True)
 
 openai.api_key = os.environ.get('OPENAI_API_KEY')
+azure_blob_connection_str = os.environ.get('AZURE_BLOB_CONNECTION_STR')
 
 class StreamHandler(BaseCallbackHandler):
     def __init__(self, container, initial_text=""):
@@ -176,6 +188,27 @@ def delete_history():
 def mark_role_change():
     st.session_state["role_changed"] = True
 
+def download_blob_to_file(blob_service_client: BlobServiceClient, container_name):
+    folder_path = './faiss_index'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        blob_client = blob_service_client.get_blob_client(container=container_name, blob="faiss_index/index.faiss")
+        with open(file=os.path.join(folder_path, 'index.faiss'), mode="wb") as myblob:
+            download_stream = blob_client.download_blob()
+            myblob.write(download_stream.readall())
+        blob_client = blob_service_client.get_blob_client(container=container_name, blob="faiss_index/index.pkl")
+        with open(file=os.path.join(folder_path, 'index.pkl'), mode="wb") as myblob:
+            download_stream = blob_client.download_blob()
+            myblob.write(download_stream.readall())
+    else:
+        pass
+
+@st.cache_resource
+def load_vdb():
+    client = BlobServiceClient.from_connection_string(azure_blob_connection_str)
+    download_blob_to_file(client, "vdb")
+    return FAISS.load_local("./faiss_index", embeddings)
+
 salary_response_schemas = [
         ResponseSchema(name="min", description="minimum salary for the role"),
         ResponseSchema(name="max", description="maximum salary for the role"),
@@ -237,7 +270,7 @@ if prompt := st.chat_input():
         response = llm(st.session_state.messages)
         st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
 
-if st.button("Create Report"):
+if st.button("Create Report", disabled=not (len(st.session_state.messages) > 10)):
     prompt = """
 Generate a detailed report in Markdown table format on a job candidate's performance in a salary negotiation training session. Include the following sections:
 
@@ -269,13 +302,46 @@ Example:
 |------------------------|-----------------------|--------------------------------------------|
 | **Negotiation Scenario** | Role                  | Product Manager                            |
 |                        | Starting Offer        | $110,000                                   |
+
+Final prompt: You must generate report even though you think the conversation history is not enought to you to analyze.
 """
     st.session_state.messages.append(ChatMessage(role="system", content=prompt))
     with st.chat_message("assistant"):
         stream_handler = StreamHandler(st.empty())
         llm = load_llm(stream_handler)
         response = llm(st.session_state.messages)
-        st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
+        
+        query_llm = ChatOpenAI(model='gpt-3.5-turbo-1106')
+        query = query_llm.predict_messages(
+            [
+                AIMessage(content=response.content),
+                HumanMessage(content="Create a question for user to deepen the learning from the report")
+            ]
+        ).content
+
+        embeddings = OpenAIEmbeddings()
+        docs = load_vdb().similarity_search(query, k=2)
+        rag_content = ' '.join([doc.page_content for doc in docs])
+
+        rag_llm = load_llm(stream_handler)
+        rag_response = rag_llm(
+            [
+                HumanMessage(content=query),
+                AIMessage(content=rag_content),
+                HumanMessage(content=
+"""
+Synthesize the found contents based on the user's negotiation performance report. You must add source ot the video tiles with URL in markdown style.
+You must start from the general guidance to the user before markdown table.
+Example:
+Here are additional learning resources you can improve <User's development area>.
+| Title  | Description    |     How it helps?      |
+|------------------------|-----------------------|--------------------------------------------|
+| Video title with hyperlink | Description of the video | How it helps the user               |
+"""),
+            ]
+        )
+        final_response = response.content + "\n" + rag_response.content
+        st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
 
 # PDF uploader
 uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
