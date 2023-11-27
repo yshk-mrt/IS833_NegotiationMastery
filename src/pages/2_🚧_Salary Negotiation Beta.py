@@ -1,6 +1,8 @@
 import streamlit as st
 import openai
 import os
+from PyPDF2 import PdfReader
+import io
 from langchain.chains import LLMChain
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chat_models import ChatOpenAI
@@ -96,8 +98,9 @@ def create_system_prompt(user_role, optional_instruction):
     task = "You offer a role-play as a hiring manager negotiating with an applicant who received a job offer."
     goal = "Your role's task is to reduce the compensation package as low as possible but not lose the candidate."
     #user_role = "product manager"
-    condition = f"The basic salary info is available: the minimum salary is {min_salary}, the maximum salary is {max_salary}, the average salary is {average_salary}. The salary package is open at this point, but your target is {salary_multiplier} percent from the average. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary. But do not expose this to the user. You also have access to the user's resume and the option to use any information within it to support any arguments. The user's resume is found in {resume}."
+    condition = f"The basic salary info is available: the minimum salary is {min_salary}, the maximum salary is {max_salary}, the average salary is {average_salary}. The salary package is open at this point, but your target is {salary_multiplier} percent from the average. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary. But do not expose this to the user."
     #condition = "The salary package is completely open at this point, but your target is USD100,000, and the maximum is USD120,000. You could offer a sign-on bonus of $20,000 if you can get the person below $110,000. But do not expose this to the user."
+    user_resume = "You also have access to the user's resume and the option to use any information within it to support any arguments. The user's resume is found in {resume}."
     rule = "If the user asks for hint, pause the conversation and provide tips to increase chances to receive the better compensation package. The hint must include a sample answer."
     #optional_instruction
     system_prompt = SystemMessagePromptTemplate.from_template(
@@ -107,6 +110,7 @@ def create_system_prompt(user_role, optional_instruction):
     {goal}
     "The user is {user_role}.
     {condition}
+    {user_resume}
 
     Here are special rules you must follow:
     {rule}
@@ -119,6 +123,7 @@ def create_system_prompt(user_role, optional_instruction):
                 goal=goal,
                 user_role=user_role,
                 condition=condition,
+                user_resume=user_resume,
                 rule=rule,
                 optional_instruction=optional_instruction)
                 #format_instructions=format_instructions),
@@ -350,5 +355,12 @@ uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'
 
 if uploaded_file is not None:
     pdf_file = uploaded_file.read()
-    # perform operation on pdf_file
-    resume += pdf_file
+    pdf_reader = PdfReader(io.BytesIO(pdf_file))  # updated class name
+    
+    text = ""
+    for page_num in range(len(pdf_reader.pages)):  # adjusted method to get the number of pages
+        # Extract text of each page
+        page = pdf_reader.pages[page_num]  # adjusted method to access pages
+        text += page.extract_text()  # updated method to extract text
+
+    resume += text
