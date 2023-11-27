@@ -42,8 +42,6 @@ from langchain.schema import (
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 azure_blob_connection_str = os.environ.get('AZURE_BLOB_CONNECTION_STR')
 
-resume = ""
-
 class StreamHandler(BaseCallbackHandler):
     def __init__(self, container, initial_text=""):
         self.container = container
@@ -86,6 +84,24 @@ class SalarySearchHandler(BaseCallbackHandler):
 def load_llm(stream_handler):
     llm = ChatOpenAI(model='gpt-4', streaming=True, callbacks=[stream_handler])
     return llm
+
+# PDF uploader
+resume = ""
+
+uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
+
+if uploaded_file is not None:
+    pdf_file = uploaded_file.read()
+    pdf_reader = PdfReader(io.BytesIO(pdf_file))  # updated class name
+    
+    text = ""
+    for page_num in range(len(pdf_reader.pages)):  # adjusted method to get the number of pages
+        # Extract text of each page
+        page = pdf_reader.pages[page_num]  # adjusted method to access pages
+        text += page.extract_text()  # updated method to extract text
+
+    resume += text
+# end of PDF uploader
 
 def create_system_prompt(user_role, optional_instruction):
     salary_multiplier = st.session_state.salary_multiplier
@@ -350,18 +366,3 @@ Here are additional learning resources you can improve <User's development area>
         final_response = response.content + "\n" + rag_response.content
         st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
 
-# PDF uploader
-
-uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
-
-if uploaded_file is not None:
-    pdf_file = uploaded_file.read()
-    pdf_reader = PdfReader(io.BytesIO(pdf_file))  # updated class name
-    
-    text = ""
-    for page_num in range(len(pdf_reader.pages)):  # adjusted method to get the number of pages
-        # Extract text of each page
-        page = pdf_reader.pages[page_num]  # adjusted method to access pages
-        text += page.extract_text()  # updated method to extract text
-
-    resume += text
