@@ -42,6 +42,8 @@ from langchain.schema import (
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 azure_blob_connection_str = os.environ.get('AZURE_BLOB_CONNECTION_STR')
 
+resume = ""
+
 class StreamHandler(BaseCallbackHandler):
     def __init__(self, container, initial_text=""):
         self.container = container
@@ -349,7 +351,6 @@ Here are additional learning resources you can improve <User's development area>
         st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
 
 # PDF uploader
-resume = ""
 
 uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
 
