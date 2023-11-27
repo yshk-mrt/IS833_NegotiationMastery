@@ -85,6 +85,9 @@ def load_llm(stream_handler):
     llm = ChatOpenAI(model='gpt-4', streaming=True, callbacks=[stream_handler])
     return llm
 
+st.set_page_config(page_title="Salary Negotiation Mastery", page_icon="💰")
+st.title("💰 Salary Negotiation Mastery β")
+
 # PDF uploader
 resume = ""
 
@@ -248,9 +251,6 @@ if 'salary_multiplier' not in st.session_state:
 
 if 'sign_on_bonus_ratio_to_base_salary' not in st.session_state:
     st.session_state['sign_on_bonus_ratio_to_base_salary'] = random.randint(0, 20)
-
-st.set_page_config(page_title="Salary Negotiation Mastery", page_icon="💰")
-st.title("💰 Salary Negotiation Mastery β")
 
 """
 Negotiation is a fundamental skill that shapes outcomes in personal and professional interactions. 
