@@ -88,23 +88,14 @@ def load_llm(stream_handler):
 st.set_page_config(page_title="Salary Negotiation Mastery", page_icon="💰")
 st.title("💰 Salary Negotiation Mastery β")
 
-# PDF uploader
 resume = ""
 
-uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
-
-if uploaded_file is not None:
-    pdf_file = uploaded_file.read()
-    pdf_reader = PdfReader(io.BytesIO(pdf_file))  # updated class name
-    
-    text = ""
-    for page_num in range(len(pdf_reader.pages)):  # adjusted method to get the number of pages
-        # Extract text of each page
-        page = pdf_reader.pages[page_num]  # adjusted method to access pages
-        text += page.extract_text()  # updated method to extract text
-
-    resume += text
-# end of PDF uploader
+# Personality selector
+style = st.sidebar.selectbox(
+    "Select your coach's negotiation style",
+    ('Neutral', 'Friendly', 'Agressive'),
+)
+# end of personality selector
 
 def create_system_prompt(user_role, optional_instruction):
     salary_multiplier = st.session_state.salary_multiplier
@@ -119,9 +110,15 @@ def create_system_prompt(user_role, optional_instruction):
     task = "You offer a role-play as a hiring manager negotiating with an applicant who received a job offer."
     goal = "Your role's task is to reduce the compensation package as low as possible but not lose the candidate."
     #user_role = "product manager"
-    condition = f"The basic salary info is available: the minimum salary is {min_salary}, the maximum salary is {max_salary}, the average salary is {average_salary}. The salary package is open at this point, but your target is {salary_multiplier} percent from the average. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary. But do not expose this to the user."
+    condition = f"""
+    When coaching the user, you must negotiate using to the following negotiation style: {style}. 
+    The basic salary info is available: the minimum salary is {min_salary}, the maximum salary is {max_salary}, the average salary is {average_salary}. 
+    The salary package is open at this point, but your target is {salary_multiplier} percent from the average. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary, but do not expose this to the user. 
+    You also are allowed to provide additional benefits as long as the salary agreed is lower than {average_salary}. For additional benefits, you're able to talk about choice of location, aid in relocation costs, or an increase of vacation days (let user choose which interests them most). 
+    If user chooses location, share list of 5 cities (allow user to choose freely). If user chooses vacation days, the user could increase up to 2 weeks of vacation (note: your target is 1 week). If the user chooses relocation costs, the user could get up to 80% relocation coverage (note: your target is below 50%).
+    """
     #condition = "The salary package is completely open at this point, but your target is USD100,000, and the maximum is USD120,000. You could offer a sign-on bonus of $20,000 if you can get the person below $110,000. But do not expose this to the user."
-    user_resume = "You also have access to the user's resume and the option to use any information within it to support any arguments. The user's resume is found in {resume}."
+    user_resume = f"You also have access to the user's resume and the option to use any information within it to support any arguments. The user's resume is found in {resume}."
     rule = "If the user asks for hint, pause the conversation and provide tips to increase chances to receive the better compensation package. The hint must include a sample answer."
     #optional_instruction
     system_prompt = SystemMessagePromptTemplate.from_template(
@@ -366,3 +363,18 @@ Here are additional learning resources you can improve <User's development area>
         final_response = response.content + "\n" + rag_response.content
         st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
 
+# PDF uploader
+uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
+
+if uploaded_file is not None:
+    pdf_file = uploaded_file.read()
+    pdf_reader = PdfReader(io.BytesIO(pdf_file))  # updated class name
+    
+    text = ""
+    for page_num in range(len(pdf_reader.pages)):  # adjusted method to get the number of pages
+        # Extract text of each page
+        page = pdf_reader.pages[page_num]  # adjusted method to access pages
+        text += page.extract_text()  # updated method to extract text
+
+    resume += text
+# end of PDF uploader
