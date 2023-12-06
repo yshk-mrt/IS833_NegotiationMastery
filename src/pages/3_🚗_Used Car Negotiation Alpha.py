@@ -87,6 +87,10 @@ def load_llm(stream_handler):
 st.set_page_config(page_title="Used Car Negotiation", page_icon="🚗")
 st.title("🚗 Used Car Negotiation α")
 
+"""
+You are going to buy a car and want to get a good deal. Get price information on the car. Practice your negotiation skills before you talked with the seller, in a controlled and no pressure environment. You can specify featurs that are a must have, and the trim you are interested in. You can propose any discount or add-ons in your deal. The negotiation coach will respond to your offer and couter.
+"""
+
 def create_system_prompt(user_role, optional_instruction):
     salary_multiplier = st.session_state.salary_multiplier
     sign_on_bonus_ratio_to_base_salary = st.session_state.sign_on_bonus_ratio_to_base_salary
