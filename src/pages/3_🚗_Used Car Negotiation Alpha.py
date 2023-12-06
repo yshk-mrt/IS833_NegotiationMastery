@@ -81,7 +81,7 @@ class SalarySearchHandler(BaseCallbackHandler):
         #self.placeholder.write(f"Action: {action.tool}, Input:{action.tool_input}")
 
 def load_llm(stream_handler):
-    llm = ChatOpenAI(openai_api_key=openai.api_key, model='gpt-4-turbo', streaming=True, callbacks=[stream_handler])
+    llm = ChatOpenAI(openai_api_key=openai.api_key, model='gpt-4', streaming=True, callbacks=[stream_handler])
     return llm
 
 st.set_page_config(page_title="Used Car Negotiation", page_icon="🚗")
@@ -239,7 +239,7 @@ Let's practice negotiation with our negotiation coach! If you need advice, just 
 """
 
 mind_reader_mode = st.toggle('Mind Reader Mode', help="Have you ever wished you could know what someone else is thinking? Well, you can!", on_change=delete_history)
-user_role = st.text_input('Car model', 'Honda Accord', max_chars=50, key="user_role", on_change=mark_model_change)
+user_role = st.text_input('Car model', 'Please enter car modal', max_chars=50, key="user_role", on_change=mark_model_change)
 
 if st.session_state.model_changed:
     with st.chat_message("assistant"):
@@ -248,9 +248,9 @@ if st.session_state.model_changed:
         delete_history()
 
 col1, col2, col3 = st.columns(3)
-col1.text_input('Reservation Point', '$80,000', key="min_salary", max_chars=20, on_change=delete_history)
-col2.text_input('Target Point', '$200,000', key="max_salary", max_chars=20, on_change=delete_history)
-col3.text_input('Best Alternative', '$120,000', key="average_salary", max_chars=20, on_change=delete_history)
+col1.text_input('Low Price', '$80,000', key="min_salary", max_chars=20, on_change=delete_history)
+col2.text_input('High Price', '$200,000', key="max_salary", max_chars=20, on_change=delete_history)
+col3.text_input('Average Price', '$120,000', key="average_salary", max_chars=20, on_change=delete_history)
 
 optional_instruction = ""
 if mind_reader_mode:
