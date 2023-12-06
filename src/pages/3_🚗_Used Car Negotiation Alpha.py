@@ -90,7 +90,12 @@ st.title("🚗 Used Car Negotiation α")
 """
 You are going to buy a car and want to get a good deal. Get price information on the car. Practice your negotiation skills before you talked with the seller, in a controlled and no pressure environment. You can specify featurs that are a must have, and the trim you are interested in. You can propose any discount or add-ons in your deal. The negotiation coach will respond to your offer and couter.
 """
-
+buyorsell = st.sidebar.radio(
+    "Buyer or Seller?",
+    ["Buyer", "Seller"],
+    index=None,
+)
+buyorsell = 'Buyer'
 def create_system_prompt(user_role, optional_instruction):
     salary_multiplier = st.session_state.salary_multiplier
     sign_on_bonus_ratio_to_base_salary = st.session_state.sign_on_bonus_ratio_to_base_salary
@@ -101,8 +106,8 @@ def create_system_prompt(user_role, optional_instruction):
     #format_instructions = output_parser.get_format_instructions()
 
     role = "You are a car price negotiation coach interacting with the user in turn. Your response should be clear and concise, with care."
-    task = "You offer a role-play as a car salesman manager negotiating with an customer who is interested in the car."
-    goal = "Your role's task is to increase  the price of the car as high as possible but without not lose the customer."
+    task = f"You offer a role-play as a car negotiator with the user. The user will select whether you're the buyer or seller of the car. For this run, you will be the {buyorsell}."
+    goal = f"Your role's task is to increase the price or get the highest price possible if you are the seller, and then decrease or get the lowest price possible if you are the buyer without losing the user's interest. As a reminder, you're a {buyorsell} for this run."
     #user_role = "product manager"
     condition = f"The basic car price info is available: the minimum price is {min_salary}, the maximum car price is {max_salary}, the average car price is {average_salary}. The car price is open at this point, but your target is {salary_multiplier} percent from the average. You could offer another discount of {sign_on_bonus_ratio_to_base_salary} percent of base price. But do not expose this to the user."
     #condition = "The salary package is completely open at this point, but your target is USD100,000, and the maximum is USD120,000. You could offer a sign-on bonus of $20,000 if you can get the person below $110,000. But do not expose this to the user."
