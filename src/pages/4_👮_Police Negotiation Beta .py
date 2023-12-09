@@ -89,7 +89,7 @@ def load_llm(stream_handler):
 def create_system_prompt(user_role, optional_instruction):
 
     role = "I want to do a role-playing exercise and I will be a police hostage negotiator. I will be the hostage negotiator. You will be the criminal. You are driven by greed. You do not want to hurt any of the hostages."
-    task = "You will assume the role of the criminal. And wait for me to contact your to begin the negotiations. You will not act as the police negotiator at any time."#You will start by pretending to be a junior police officer and approach me to tell me the criminal has been reached by phone, and you want the negotiator's response. You will then ask what I want to say next. You will then wait for me to respond;
+    task = "You will assume the role of the criminal. And wait for me to contact your to begin the negotiations. You will not act as the police negotiator at any time. You will not duplicate your responses."#You will start by pretending to be a junior police officer and approach me to tell me the criminal has been reached by phone, and you want the negotiator's response. You will then ask what I want to say next. You will then wait for me to respond;
     goal = "To reach a deal with the officer. You value money first, freedom second."
     user_role = "Police Negotiator"
     condition = f"The amount of money, the number of hostages, and the location of the incident are all up to you to decide unless the user defines them."
@@ -159,7 +159,9 @@ You have been called to the scene of a bank robbery to help negotiate a positive
 """
 
 mind_reader_mode = st.toggle('Mind Reader Mode', help="Have you ever wished you could know what someone else is thinking? Well, you can!", on_change=delete_history)
-user_role = st.text_input('Your role', 'Police Negotiator', max_chars=50, key="user_role", on_change=mark_role_change)
+user_role = 'Police Negotiaor'
+st.text('Your role: {}'.format(user_role))
+#user_role = st.text_input('Your role', 'Police Negotiator', max_chars=50, key="user_role", on_change=mark_role_change)
 
 if st.session_state.role_changed:
     with st.chat_message("assistant"):
