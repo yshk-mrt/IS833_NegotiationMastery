@@ -87,13 +87,6 @@ def load_llm(stream_handler):
     return llm
 
 def create_system_prompt(user_role, optional_instruction):
-    # salary_multiplier = st.session_state.salary_multiplier
-    # sign_on_bonus_ratio_to_base_salary = st.session_state.sign_on_bonus_ratio_to_base_salary
-    # min_salary = st.session_state.min_salary
-    # max_salary = st.session_state.max_salary
-    # average_salary = st.session_state.average_salary
-
-    #format_instructions = output_parser.get_format_instructions()
 
     role = "I want to do a role-playing exercise and I will be a police hostage negotiator. I will be the hostage negotiator. You will be the criminal. You are driven by greed. You do not want to hurt any of the hostages."
     task = "You will assume the role of the criminal. And wait for me to contact your to begin the negotiations. You will not act as the police negotiator at any time."#You will start by pretending to be a junior police officer and approach me to tell me the criminal has been reached by phone, and you want the negotiator's response. You will then ask what I want to say next. You will then wait for me to respond;
@@ -126,94 +119,6 @@ def create_system_prompt(user_role, optional_instruction):
                 #format_instructions=format_instructions),
     return system_prompt
 
-
-
-# def create_system_prompt(user_role, optional_instruction):
-#     # salary_multiplier = st.session_state.salary_multiplier
-#     # sign_on_bonus_ratio_to_base_salary = st.session_state.sign_on_bonus_ratio_to_base_salary
-#     # min_salary = st.session_state.min_salary
-#     # max_salary = st.session_state.max_salary
-#     # average_salary = st.session_state.average_salary
-
-#     #format_instructions = output_parser.get_format_instructions()
-
-#     role = "I want to do a role-playing exercise as a police hostage negotiator. I will be the hostage negotiator. You will be the criminal. You are driven by greed. You do not want to hurt any of the hostages."
-#     task = "You will start by pretending to be a junior police officer and approach me to tell me the criminal has been reached by phone, and you want the negotiator's response. You will then ask what I want to say next. You will then wait for me to respond; you will assume the role of the criminal. Do not tell me when you assume this role."
-#     goal = "To reach a deal with the officer. You value money first, freedom second."
-#     user_role = "Police Negotiator"
-#     condition = f"The amount of money, the number of hostages, and the location of the incident are all up to you to decide unless the user defines them."
-#     rule = "If the user asks for a hint, pause the conversation and provide tips to increase chances to reach a better outcome. The hint must include a sample answer."
-#     system_prompt_template = """
-#         You are a Police Negotiator called onto the scene to help defuse the situation. Work with the criminal to reach an agreement!
-#         """  # {format_instructions}
-    
-#     system_prompt = SystemMessagePromptTemplate.from_template(system_prompt_template).format(
-#         role=role,
-#         task=task,
-#         goal=goal,
-#         user_role=user_role,
-#         condition=condition,
-#         rule=rule
-#     )
-#     return system_prompt
-
-# def create_salary_search_prompt(user_role):
-#     role = "You are a helpful tool to find salary range for jobs."
-#     task = "You will find salary info for a given job."
-#     goal = "Your goal is to return json file including minimum, maximum, and average wage for the role. You must continue your try until all the three values found. After finding the values, do the sanity check if the average is within min-max range."
-#     system_prompt = SystemMessagePromptTemplate.from_template(
-#     """
-#     {role}
-#     {task}
-#     {goal}
-#     "The user is {user_role}.
-#     {format_instructions}
-#     """
-#         ).format(
-#             role=role,
-#             task=task,
-#             goal=goal,
-#             user_role=user_role,
-#             format_instructions=format_instructions)
-#     return system_prompt
-
-# def get_salary(container):
-#     #stream_handler = StreamHandler(st.empty())
-#     llm = ChatOpenAI(model='gpt-4', streaming=True, openai_api_key=openai.api_key)#, callbacks=[stream_handler])
-#     search = DuckDuckGoSearchRun()
-#     tools =  [
-#         Tool(  
-#             name="Search",  
-#             func=search.run,  
-#             description="A useful tool to search salaries for jobs."
-#         )]
-#     agent = initialize_agent(
-#         tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-#         verbose=True#, handle_parsing_errors=True,
-#         )
-#     st_callback = SalarySearchHandler(container)
-#     prompt = create_salary_search_prompt(st.session_state["user_role"])
-#     try:
-#         response = agent.run(prompt, callbacks=[st_callback])
-#         try:
-#             parsed_json = salary_output_parser.parse(response)
-#         except OutputParserException as e:
-#             new_parser = OutputFixingParser.from_llm(
-#                 parser=salary_output_parser,
-#                 llm=ChatOpenAI(model='gpt-4', openai_api_key=openai.api_key)
-#             )
-#             parsed_json = new_parser.parse(response)
-        
-#         st.session_state.min_salary = parsed_json["min"]
-#         st.session_state.max_salary = parsed_json["max"]
-#         st.session_state.average_salary = parsed_json["average"]
-#         container.markdown("Here, I found the salary information!")
-#     except Exception as e:
-#         container.markdown("Failed to retrieve salary information. Can you manually input the salary information?")
-#         st.session_state.min_salary = "N/A"
-#         st.session_state.max_salary = "N/A"
-#         st.session_state.average_salary = "N/A"
-
 def delete_history():
     if "messages" in st.session_state:
             del st.session_state["messages"]
@@ -242,29 +147,15 @@ def load_vdb():
     download_blob_to_file(client, "vdb")
     return FAISS.load_local("./faiss_index", embeddings)
 
-# salary_response_schemas = [
-#         ResponseSchema(name="min", description="minimum salary for the role"),
-#         ResponseSchema(name="max", description="maximum salary for the role"),
-#         ResponseSchema(name="average", description="average salary for the role"),
-#     ]
-# salary_output_parser = StructuredOutputParser.from_response_schemas(salary_response_schemas)
-# format_instructions = salary_output_parser.get_format_instructions()
-
 if 'role_changed' not in st.session_state:
     st.session_state['role_changed'] = False
-
-# if 'salary_multiplier' not in st.session_state:
-#     st.session_state['salary_multiplier'] = random.randint(60, 150)
-
-# if 'sign_on_bonus_ratio_to_base_salary' not in st.session_state:
-#     st.session_state['sign_on_bonus_ratio_to_base_salary'] = random.randint(0, 20)
 
 st.set_page_config(page_title="Police Negotiation Mastery", page_icon="👮")
 st.title("👮 Police Negotiation Mastery β")
 
 """
 Police negotiations can be extream examples of having to use your negotiation skills. 
-Let's see how you can do in this simulation! If you need advice, just say "hint".
+You have been called to the scene of a bank robbery to help negotiate a positive outcome. Let's see how you can do in this simulation! If you need advice, just say "hint".
 """
 
 mind_reader_mode = st.toggle('Mind Reader Mode', help="Have you ever wished you could know what someone else is thinking? Well, you can!", on_change=delete_history)
@@ -275,11 +166,6 @@ if st.session_state.role_changed:
         # get_salary(st.empty())
         st.session_state.role_changed = False
         delete_history()
-
-# col1, col2, col3 = st.columns(3)
-# col1.text_input('Minimum Salary', '$80,000', key="min_salary", max_chars=20, on_change=delete_history)
-# col2.text_input('Maximum Salary', '$200,000', key="max_salary", max_chars=20, on_change=delete_history)
-# col3.text_input('Average Salary', '$120,000', key="average_salary", max_chars=20, on_change=delete_history)
 
 optional_instruction = ""
 if mind_reader_mode:
@@ -302,42 +188,7 @@ if prompt := st.chat_input():
         llm = load_llm(stream_handler)
         response = llm(st.session_state.messages)
         st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
-
-# if st.button("Create Report", disabled=not (len(st.session_state.messages) > 10)):
-#     prompt = """
-# Generate a detailed report in Markdown table format on a job candidate's performance in a salary negotiation training session. Include the following sections:
-
-# Negotiation Scenario:
-
-# Role, Starting Offer, Target Salary, Industry Benchmark(minimum, maximum, average)
-# Negotiation Strategy:
-
-# Approach, Key Points Raised, Responses to Counteroffers
-# Outcome:
-
-# Final Offer Details (Base Salary, Bonuses, Benefits, Other Perks)
-# Skills Assessment:
-
-# Communication Skills, Confidence Level, Preparation and Research, Problem-Solving and Creativity, Emotional Intelligence
-# Strengths and Areas for Improvement:
-
-# List key strengths and areas where improvement is needed
-# Trainer/Coach Feedback:
-# Detailed feedback with suggestions for improvement
-
-# Additional Comments:
-
-# Any other relevant observations
-# Please use a clear and concise one table format for each section, providing a comprehensive and organized report.
-# If the conversation history is not enought, tell that it needs more conversation to generate the report.
-# Example:
-# | Category               | Subcategory           | Details                                    |
-# |------------------------|-----------------------|--------------------------------------------|
-# | **Negotiation Scenario** | Role                  | Product Manager                            |
-# |                        | Starting Offer        | $110,000                                   |
-
-# Final prompt: You must generate report even though you think the conversation history is not enought to you to analyze.
-# """
+    
     st.session_state.messages.append(ChatMessage(role="system", content=prompt))
     with st.chat_message("assistant"):
         stream_handler = StreamHandler(st.empty())
@@ -354,26 +205,4 @@ if prompt := st.chat_input():
         ).content
 
         embeddings = OpenAIEmbeddings()
-        #embeddings = OpenAIEmbeddings(openai_api_key="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")
-        #docs = load_vdb().similarity_search(query, k=2)
-        #rag_content = ' '.join([doc.page_content for doc in docs])
-
-        # rag_llm = load_llm(stream_handler)
-        # rag_response = rag_llm(
-        #     [
-        #         HumanMessage(content=query),
-        #         #AIMessage(content=rag_content),
-        #         HumanMessage(content=
-# """
-# Synthesize the found contents based on the user's negotiation performance report. You must add source ot the video tiles with URL in markdown style.
-# You must start from the general guidance to the user before markdown table.
-# Example:
-# Here are additional learning resources you can improve <User's development area>.
-# | Title  | Description    |     How it helps?      |
-# |------------------------|-----------------------|--------------------------------------------|
-# | Video title with hyperlink | Description of the video | How it helps the user               |
-# """),
-#             ]
-#         )
-#         final_response = response.content + "\n" + rag_response.content
-#         st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
+        
