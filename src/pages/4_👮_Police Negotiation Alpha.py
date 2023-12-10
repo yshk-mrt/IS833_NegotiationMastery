@@ -84,6 +84,9 @@ def load_llm(stream_handler):
     #llm = ChatOpenAI(model='gpt-4', streaming=True, callbacks=[stream_handler], openai_api_key=openai.api_key)
     return llm
 
+st.set_page_config(page_title="Police Negotiation Mastery", page_icon="👮")
+st.title("👮 Police Negotiation Mastery α")
+
 def create_system_prompt(user_role, optional_instruction):
 
     role = "I want to do a role-playing exercise and I will be a police hostage negotiator. I will be the hostage negotiator. You will be the criminal. You are driven by greed. You do not want to hurt any of the hostages."
@@ -147,9 +150,6 @@ def load_vdb():
 
 if 'role_changed' not in st.session_state:
     st.session_state['role_changed'] = False
-
-st.set_page_config(page_title="Police Negotiation Mastery", page_icon="👮")
-st.title("👮 Police Negotiation Mastery β")
 
 """
 Police negotiations can be extream examples of having to use your negotiation skills. 
