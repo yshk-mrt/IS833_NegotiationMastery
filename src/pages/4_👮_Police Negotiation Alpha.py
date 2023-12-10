@@ -189,20 +189,3 @@ if prompt := st.chat_input():
         response = llm(st.session_state.messages)
         st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
     
-    st.session_state.messages.append(ChatMessage(role="system", content=prompt))
-    with st.chat_message("assistant"):
-        stream_handler = StreamHandler(st.empty())
-        llm = load_llm(stream_handler)
-        response = llm(st.session_state.messages)
-        
-        query_llm = ChatOpenAI(model='gpt-3.5-turbo-1106')
-        #query_llm = ChatOpenAI(model='gpt-3.5-turbo-1106', openai_api_key=openai.api_key)
-        query = query_llm.predict_messages(
-            [
-                AIMessage(content=response.content),
-                HumanMessage(content="Create a question for user to deepen the learning from the report")
-            ]
-        ).content
-
-        embeddings = OpenAIEmbeddings()
-        
