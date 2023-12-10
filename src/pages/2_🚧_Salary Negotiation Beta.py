@@ -281,7 +281,7 @@ Let's practice negotiation with our negotiation coach! If you need advice, just 
 
 mind_reader_mode = st.toggle('Mind Reader Mode', help="Have you ever wished you could know what someone else is thinking? Well, you can!", on_change=delete_history)
 col_role, col_search = st.columns([3, 1])
-user_role = col_role.text_input('Your role', 'Product Manager', max_chars=50, key="user_role")
+user_role = col_role.text_input('Your role', 'Product Manager', max_chars=50, key="user_role", on_change=delete_history)
 col_search.button("Search Salary Info", on_click=mark_role_change, )
 
 if st.session_state.role_changed:
