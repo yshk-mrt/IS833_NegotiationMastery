@@ -336,26 +336,7 @@ Final prompt: You must generate report even though you think the conversation hi
         docs = load_vdb().similarity_search(query, k=2)
         rag_content = ' '.join([doc.page_content for doc in docs])
 
-    #    rag_llm = load_llm(stream_handler)
-    #    rag_response = rag_llm(
-    #        [
-    #            HumanMessage(content=query),
-    #            AIMessage(content=rag_content),
-    #            HumanMessage(content=
-("""
-Synthesize the found contents based on the user's negotiation performance report. You must add source ot the video tiles with URL in markdown style.
-You must start from the general guidance to the user before markdown table.
-Example:
-Here are additional learning resources you can improve <User's development area>.
-| Title  | Description    |     How it helps?      |
-|------------------------|-----------------------|--------------------------------------------|
-| Video title with hyperlink | Description of the video | How it helps the user               |
-"""),
-#            ]
-#        )
-    #final_response = response.content + "\n"
- #       st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
-import streamlit as st
+
 
 # Function to collect and store feedback
 def collect_feedback():
