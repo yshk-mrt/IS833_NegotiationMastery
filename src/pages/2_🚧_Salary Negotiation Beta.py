@@ -165,7 +165,7 @@ def create_salary_search_prompt(user_role):
 
 def get_salary(container):
     #stream_handler = StreamHandler(st.empty())
-    llm = ChatOpenAI(model='gpt-4', streaming=True)#, callbacks=[stream_handler])
+    llm = ChatOpenAI(model='gpt-4-0613', streaming=True)#, callbacks=[stream_handler])
     search = DuckDuckGoSearchRun()
     tools =  [
         Tool(  
@@ -186,7 +186,7 @@ def get_salary(container):
         except OutputParserException as e:
             new_parser = OutputFixingParser.from_llm(
                 parser=salary_output_parser,
-                llm=ChatOpenAI(model='gpt-4')
+                llm=ChatOpenAI(model='gpt-4-0613')
             )
             parsed_json = new_parser.parse(response)
         
@@ -280,7 +280,9 @@ Let's practice negotiation with our negotiation coach! If you need advice, just 
 """
 
 mind_reader_mode = st.toggle('Mind Reader Mode', help="Have you ever wished you could know what someone else is thinking? Well, you can!", on_change=delete_history)
-user_role = st.text_input('Your role', 'Product Manager', max_chars=50, key="user_role", on_change=mark_role_change)
+col_role, col_search = st.columns([3, 1])
+user_role = col_role.text_input('Your role', 'Product Manager', max_chars=50, key="user_role")
+col_search.button("Search Salary Info", on_click=mark_role_change, )
 
 if st.session_state.role_changed:
     with st.chat_message("assistant"):
