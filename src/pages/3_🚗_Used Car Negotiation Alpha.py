@@ -355,3 +355,33 @@ Here are additional learning resources you can improve <User's development area>
         )
         final_response = response.content + "\n" + rag_response.content
         st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
+import streamlit as st
+
+# Function to collect and store feedback
+def collect_feedback():
+    # Define feedback form fields
+    with st.form(key='feedback_form'):
+        st.write("Feedback Form")
+        rating = st.slider("How would you rate your experience?", 1, 5, 3)
+        comments = st.text_area("Any comments or suggestions?")
+        submit_button = st.form_submit_button(label='Submit Feedback')
+
+        if submit_button:
+            # Here you can add code to store this feedback in a database or a file
+            # For example, appending to a CSV file
+            with open("feedback.csv", "a") as f:
+                f.write(f"{rating},'{comments}'\n")
+            st.success("Thank you for your feedback!")
+
+# Main app
+def main():
+    st.title("🚗 Used Car Negotiation α")
+
+    # Your existing application code...
+    # ...
+
+    # Call the feedback function at the end or at a designated section in your app
+    collect_feedback()
+
+if __name__ == "__main__":
+    main()
