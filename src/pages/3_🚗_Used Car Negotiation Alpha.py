@@ -283,7 +283,7 @@ if prompt := st.chat_input():
         response = llm(st.session_state.messages)
         st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
 
-if st.button("Create Report", disabled=not (len(st.session_state.messages) > 10)):
+#if st.button("Create Report", disabled=not (len(st.session_state.messages) > 10)):
     prompt = """
 Generate a detailed report in Markdown table format on a customer's performance in a price negotiation training session. Include the following sections:
 
@@ -342,7 +342,7 @@ Final prompt: You must generate report even though you think the conversation hi
     #            HumanMessage(content=query),
     #            AIMessage(content=rag_content),
     #            HumanMessage(content=
-"""
+("""
 Synthesize the found contents based on the user's negotiation performance report. You must add source ot the video tiles with URL in markdown style.
 You must start from the general guidance to the user before markdown table.
 Example:
@@ -351,8 +351,8 @@ Here are additional learning resources you can improve <User's development area>
 |------------------------|-----------------------|--------------------------------------------|
 | Video title with hyperlink | Description of the video | How it helps the user               |
 """),
-            ]
-        )
+#            ]
+#        )
         final_response = response.content + "\n"
         st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
 import streamlit as st
