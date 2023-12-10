@@ -188,4 +188,3 @@ if prompt := st.chat_input():
         llm = load_llm(stream_handler)
         response = llm(st.session_state.messages)
         st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
-    
