@@ -353,8 +353,8 @@ Here are additional learning resources you can improve <User's development area>
 """),
 #            ]
 #        )
-        final_response = response.content + "\n"
-        st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
+    #final_response = response.content + "\n"
+ #       st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
 import streamlit as st
 
 # Function to collect and store feedback
