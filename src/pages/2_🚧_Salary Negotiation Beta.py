@@ -140,7 +140,6 @@ def create_system_prompt(user_role, optional_instruction):
                 rule=rule,
                 optional_instruction=optional_instruction)
                 #format_instructions=format_instructions),
-    st.markdown(system_prompt)
     return system_prompt
 
 def create_salary_search_prompt(user_role):
