@@ -103,7 +103,7 @@ def create_system_prompt(user_role, optional_instruction):
     task = "You offer a role-play as a hiring manager negotiating with an applicant who received a job offer."
     goal = "Your role's task is to reduce the compensation package as low as possible but not lose the candidate."
     #user_role = "product manager"
-    personality = f"When coaching the user, you must negotiate using to the following style: {style}. Collaborative style is to work together to find a solution that works for both parties. Competitive style is to focus on winning the negotiation. Neutral style is to be neutral and not to be too aggressive or too passive."
+    personality = f"When coaching the user, you must negotiate using to the following style: {style}. Collaborative style is to help the user maximize their gains without losing sight on your own target. Competitive style is to maximize your own gains (your target) and minimizing the user's gains. Neutral style is the default style and doesn't any stylistic changes to the way you negotiate."
     conditions = f"""
     The basic salary info is available: the minimum salary is {min_salary}, the maximum salary is {max_salary}, the average salary is {average_salary}. 
     The salary package is open at this point, but you have been given a budget of up to {salary_multiplier} percent from the average, while your target is to get as close as possible to the minimum salary. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary. Do not disclose either the sign-on bonus or your budget to the user, unless it helps with negotiating terms. 
@@ -140,6 +140,7 @@ def create_system_prompt(user_role, optional_instruction):
                 rule=rule,
                 optional_instruction=optional_instruction)
                 #format_instructions=format_instructions),
+    st.markdown(system_prompt)
     return system_prompt
 
 def create_salary_search_prompt(user_role):
@@ -245,14 +246,14 @@ if 'sign_on_bonus_ratio_to_base_salary' not in st.session_state:
     st.session_state['sign_on_bonus_ratio_to_base_salary'] = random.randint(0, 20)
 
 # Personality selector
-style_selector = st.sidebar.selectbox(
+if 'style' not in st.session_state:
+    st.session_state['style'] = 'Neutral'
+
+st.session_state.style = st.sidebar.selectbox(
     "Select your coach's negotiation style",
     ('Neutral', 'Collaborative', 'Competitive'),
     on_change = delete_history,
 )
-
-if 'style' not in st.session_state:
-    st.session_state['style'] = style_selector
 # end of personality selector
 
 # PDF uploader
@@ -270,7 +271,7 @@ if uploaded_file is not None:
 
     st.session_state['resume'] = resume_text
 else:
-    st.session_state['resume'] = "User hasn't provided resume."
+    st.session_state['resume'] = "User hasn't provided a resume"
 # end of PDF uploader
 
 """
