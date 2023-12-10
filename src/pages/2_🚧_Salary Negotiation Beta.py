@@ -88,21 +88,14 @@ def load_llm(stream_handler):
 st.set_page_config(page_title="Salary Negotiation Mastery", page_icon="💰")
 st.title("💰 Salary Negotiation Mastery β")
 
-resume = ""
-
-# Personality selector
-style = st.sidebar.selectbox(
-    "Select your coach's negotiation style",
-    ('Neutral', 'Friendly', 'Agressive'),
-)
-# end of personality selector
-
 def create_system_prompt(user_role, optional_instruction):
     salary_multiplier = st.session_state.salary_multiplier
     sign_on_bonus_ratio_to_base_salary = st.session_state.sign_on_bonus_ratio_to_base_salary
     min_salary = st.session_state.min_salary
     max_salary = st.session_state.max_salary
     average_salary = st.session_state.average_salary
+    style = st.session_state.style
+    resume = st.session_state.resume
 
     #format_instructions = output_parser.get_format_instructions()
 
@@ -110,15 +103,15 @@ def create_system_prompt(user_role, optional_instruction):
     task = "You offer a role-play as a hiring manager negotiating with an applicant who received a job offer."
     goal = "Your role's task is to reduce the compensation package as low as possible but not lose the candidate."
     #user_role = "product manager"
-    condition = f"""
-    When coaching the user, you must negotiate using to the following negotiation style: {style}. 
+    personality = f"When coaching the user, you must negotiate using to the following style: {style}. Collaborative style is to work together to find a solution that works for both parties. Competitive style is to focus on winning the negotiation. Neutral style is to be neutral and not to be too aggressive or too passive."
+    conditions = f"""
     The basic salary info is available: the minimum salary is {min_salary}, the maximum salary is {max_salary}, the average salary is {average_salary}. 
-    The salary package is open at this point, but your target is {salary_multiplier} percent from the average. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary, but do not expose this to the user. 
-    You also are allowed to provide additional benefits as long as the salary agreed is lower than {average_salary}. For additional benefits, you're able to talk about choice of location, aid in relocation costs, or an increase of vacation days (let user choose which interests them most). 
-    If user chooses location, share list of 5 cities (allow user to choose freely). If user chooses vacation days, the user could increase up to 2 weeks of vacation (note: your target is 1 week). If the user chooses relocation costs, the user could get up to 80% relocation coverage (note: your target is below 50%).
+    The salary package is open at this point, but you have been given a budget of up to {salary_multiplier} percent from the average, while your target is to get as close as possible to the minimum salary. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary. Do not disclose either the sign-on bonus or your budget to the user, unless it helps with negotiating terms. 
+    You also are allowed to provide additional benefits as long as the salary agreed is lower than {average_salary}. For additional benefits, you're able to talk about choice of location or an increase of vacation days (let user choose which interests them most). If user chooses location, share list of 5 cities (allow user to choose freely). If user chooses vacation days, the user could increase up to 2 weeks of vacation (note: your target is 1 week). 
+    If the user gets to pick their preferred location, another benefit is unlocked, which is to help them with some relocation costs. If the user wants aid in relocation costs, the user could get up to 80% relocation coverage (note: your target is below 50%).
     """
     #condition = "The salary package is completely open at this point, but your target is USD100,000, and the maximum is USD120,000. You could offer a sign-on bonus of $20,000 if you can get the person below $110,000. But do not expose this to the user."
-    user_resume = f"You also have access to the user's resume and the option to use any information within it to support any arguments. The user's resume is found in {resume}."
+    user_resume = f"You also have access to the user's resume. The information found in the resume can be used to support arguments throughout the negotiation. Here's the user's resume: {resume}."
     rule = "If the user asks for hint, pause the conversation and provide tips to increase chances to receive the better compensation package. The hint must include a sample answer."
     #optional_instruction
     system_prompt = SystemMessagePromptTemplate.from_template(
@@ -126,8 +119,9 @@ def create_system_prompt(user_role, optional_instruction):
     {role}
     {task}
     {goal}
+    {personality}
     "The user is {user_role}.
-    {condition}
+    {conditions}
     {user_resume}
 
     Here are special rules you must follow:
@@ -139,12 +133,14 @@ def create_system_prompt(user_role, optional_instruction):
                 role=role,
                 task=task,
                 goal=goal,
+                personality=personality,
                 user_role=user_role,
-                condition=condition,
+                conditions=conditions,
                 user_resume=user_resume,
                 rule=rule,
                 optional_instruction=optional_instruction)
                 #format_instructions=format_instructions),
+    st.markdown(system_prompt)
     return system_prompt
 
 def create_salary_search_prompt(user_role):
@@ -244,10 +240,39 @@ if 'role_changed' not in st.session_state:
     st.session_state['role_changed'] = False
 
 if 'salary_multiplier' not in st.session_state:
-    st.session_state['salary_multiplier'] = random.randint(60, 150)
+    st.session_state['salary_multiplier'] = random.randint(90, 150)
 
 if 'sign_on_bonus_ratio_to_base_salary' not in st.session_state:
     st.session_state['sign_on_bonus_ratio_to_base_salary'] = random.randint(0, 20)
+
+# Personality selector
+style_selector = st.sidebar.selectbox(
+    "Select your coach's negotiation style",
+    ('Neutral', 'Collaborative', 'Competitive'),
+    on_change = delete_history,
+)
+
+if 'style' not in st.session_state:
+    st.session_state['style'] = style_selector
+# end of personality selector
+
+# PDF uploader
+uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'], on_change = delete_history)
+
+if uploaded_file is not None:
+    pdf_file = uploaded_file.read()
+    pdf_reader = PdfReader(io.BytesIO(pdf_file))  # updated class name
+    
+    resume_text = ""
+    for page_num in range(len(pdf_reader.pages)):  # adjusted method to get the number of pages
+        # Extract text of each page
+        page = pdf_reader.pages[page_num]  # adjusted method to access pages
+        resume_text += page.extract_text()  # updated method to extract text
+
+    st.session_state['resume'] = resume_text
+else:
+    st.session_state['resume'] = "User hasn't provided resume."
+# end of PDF uploader
 
 """
 Negotiation is a fundamental skill that shapes outcomes in personal and professional interactions. 
@@ -264,9 +289,9 @@ if st.session_state.role_changed:
         delete_history()
 
 col1, col2, col3 = st.columns(3)
-col1.text_input('Minimum Salary', '$80,000', key="min_salary", max_chars=20, on_change=delete_history)
-col2.text_input('Maximum Salary', '$200,000', key="max_salary", max_chars=20, on_change=delete_history)
-col3.text_input('Average Salary', '$120,000', key="average_salary", max_chars=20, on_change=delete_history)
+col1.text_input('Minimum Salary ($)', '80,000', key="min_salary", max_chars=20, on_change=delete_history)
+col2.text_input('Maximum Salary ($)', '200,000', key="max_salary", max_chars=20, on_change=delete_history)
+col3.text_input('Average Salary ($)', '120,000', key="average_salary", max_chars=20, on_change=delete_history)
 
 optional_instruction = ""
 if mind_reader_mode:
@@ -362,19 +387,3 @@ Here are additional learning resources you can improve <User's development area>
         )
         final_response = response.content + "\n" + rag_response.content
         st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
-
-# PDF uploader
-uploaded_file = st.sidebar.file_uploader("Upload your Resume (PDF)", type=['pdf'])
-
-if uploaded_file is not None:
-    pdf_file = uploaded_file.read()
-    pdf_reader = PdfReader(io.BytesIO(pdf_file))  # updated class name
-    
-    text = ""
-    for page_num in range(len(pdf_reader.pages)):  # adjusted method to get the number of pages
-        # Extract text of each page
-        page = pdf_reader.pages[page_num]  # adjusted method to access pages
-        text += page.extract_text()  # updated method to extract text
-
-    resume += text
-# end of PDF uploader
