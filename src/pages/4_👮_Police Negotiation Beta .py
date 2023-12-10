@@ -37,8 +37,6 @@ from langchain.schema import (
 
 #set_debug(True)
 openai.api_key = os.environ.get('OPENAI_API_KEY')
-#openai.api_key = "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"#os.environ.get('OPENAI_API_KEY')
-#openai_api_key = "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"
 
 azure_blob_connection_str = os.environ.get('AZURE_BLOB_CONNECTION_STR')
 
