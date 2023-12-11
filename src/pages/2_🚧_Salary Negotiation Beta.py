@@ -38,11 +38,13 @@ from langchain.schema import (
     HumanMessage,
     SystemMessage
 )
+from langchain.utilities import BingSearchAPIWrapper
 
 #set_debug(True)
 
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 azure_blob_connection_str = os.environ.get('AZURE_BLOB_CONNECTION_STR')
+os.environ["BING_SEARCH_URL"] = "https://api.bing.microsoft.com/v7.0/search"
 
 class StreamHandler(BaseCallbackHandler):
     def __init__(self, container, initial_text=""):
@@ -168,7 +170,8 @@ def create_salary_search_prompt(user_role):
 def get_salary(container):
     #stream_handler = StreamHandler(st.empty())
     llm = ChatOpenAI(model='gpt-4-0613', streaming=True)#, callbacks=[stream_handler])
-    search = DuckDuckGoSearchRun()
+    #search = DuckDuckGoSearchRun(verbose=True)
+    search = BingSearchAPIWrapper()
     tools =  [
         Tool(  
             name="Search",  
