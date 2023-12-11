@@ -3,6 +3,8 @@ import openai
 import os
 from PyPDF2 import PdfReader
 import io
+import langchain
+langchain.debug = True
 from langchain.chains import LLMChain
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chat_models import ChatOpenAI
@@ -146,7 +148,7 @@ def create_system_prompt(user_role, optional_instruction):
 def create_salary_search_prompt(user_role):
     role = "You are a helpful tool to find salary range for jobs."
     task = "You will find salary info for a given job."
-    goal = "Your goal is to return json file including minimum, maximum, and average wage for the role. You must continue your try until all the three values found. After finding the values, do the sanity check if the average is within min-max range."
+    goal = "Your goal is to return json file including minimum, maximum, and average wage for the role. You must continue your try until all the numeric three values are found. Make sure if the average is within min-max range."
     system_prompt = SystemMessagePromptTemplate.from_template(
     """
     {role}
@@ -175,7 +177,7 @@ def get_salary(container):
         )]
     agent = initialize_agent(
         tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True#, handle_parsing_errors=True,
+        verbose=False#, handle_parsing_errors=True,
         )
     st_callback = SalarySearchHandler(container)
     prompt = create_salary_search_prompt(st.session_state["user_role"])
