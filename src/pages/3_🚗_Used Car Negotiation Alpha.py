@@ -287,7 +287,7 @@ if prompt := st.chat_input():
         response = llm(st.session_state.messages)
         st.session_state.messages.append(ChatMessage(role="assistant", content=response.content.replace("$", r"\$")))
 
-#if st.button("Create Report", disabled=not (len(st.session_state.messages) > 10)):
+if st.button("Create Report", disabled=not (len(st.session_state.messages) > 10)):
     prompt = """
 Generate a detailed report in Markdown table format on a customer's performance in a price negotiation training session. Include the following sections:
 
@@ -327,39 +327,8 @@ Final prompt: You must generate report even though you think the conversation hi
         stream_handler = StreamHandler(st.empty())
         llm = load_llm(stream_handler)
         response = llm(st.session_state.messages)
-        
-#       query_llm = ChatOpenAI(model='gpt-3.5-turbo-1106')
-#        query = query_llm.predict_messages(
-#            [
-#                AIMessage(content=response.content),
-#                HumanMessage(content="Create a question for user to deepen the learning from the report")
-#            ]
-#        ).content
-#
-#        embeddings = OpenAIEmbeddings()
-#        docs = load_vdb().similarity_search(query, k=2)
-#        rag_content = ' '.join([doc.page_content for doc in docs])
-#
-    #    rag_llm = load_llm(stream_handler)
-    #    rag_response = rag_llm(
-    #        [
-    #            HumanMessage(content=query),
-    #            AIMessage(content=rag_content),
-    #            HumanMessage(content=
-#("""
-#Synthesize the found contents based on the user's negotiation performance report. You must add source ot the video tiles with URL in markdown style.
-#You must start from the general guidance to the user before markdown table.
-#Example:
-#Here are additional learning resources you can improve <User's development area>.
-#| Title  | Description    |     How it helps?      |
-#|------------------------|-----------------------|--------------------------------------------|
-#| Video title with hyperlink | Description of the video | How it helps the user               |
-#"""),
-#            ]
-#        )
-    final_response = response.content + "\n" + rag_response.content
- #       st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
-import streamlit as st
+        final_response = response.content# + "\n" + rag_response.content
+        st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
 
 # Function to collect and store feedback
 def collect_feedback():
