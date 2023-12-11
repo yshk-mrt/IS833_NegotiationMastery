@@ -107,7 +107,7 @@ def create_system_prompt(user_role, optional_instruction):
     task = "You offer a role-play as a hiring manager negotiating with an applicant who received a job offer."
     goal = "Your role's task is to reduce the compensation package as low as possible but not lose the candidate."
     #user_role = "product manager"
-    personality = f"When coaching the user, you must negotiate using to the following style: {style}. Collaborative style is to help the user maximize their gains without losing sight on your own target. Competitive style is to maximize your own gains (your target) and minimizing the user's gains. Neutral style is the default style and doesn't any stylistic changes to the way you negotiate."
+    personality = f"When coaching the user, you must negotiate using to the following style: {style}. Collaborative style is to help the user get what they want without losing sight on your own target. Competitive style is to maintain your position after the initial offer as long as possible, don't let the user get what they want so easy. Neutral style is the default style and doesn't any stylistic changes to the way you negotiate."
     conditions = f"""
     The basic salary info is available: the minimum salary is {min_salary}, the maximum salary is {max_salary}, the average salary is {average_salary}. 
     The salary package is open at this point, but you have been given a budget of up to {salary_multiplier} percent from the average, while your target is to get as close as possible to the minimum salary. You could offer a sign-on bonus of {sign_on_bonus_ratio_to_base_salary} percent of base salary. Do not disclose either the sign-on bonus or your budget to the user, unless it helps with negotiating terms. 
