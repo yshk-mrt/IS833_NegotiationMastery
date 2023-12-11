@@ -328,18 +328,18 @@ Final prompt: You must generate report even though you think the conversation hi
         llm = load_llm(stream_handler)
         response = llm(st.session_state.messages)
         
-        query_llm = ChatOpenAI(model='gpt-3.5-turbo-1106')
-        query = query_llm.predict_messages(
-            [
-                AIMessage(content=response.content),
-                HumanMessage(content="Create a question for user to deepen the learning from the report")
-            ]
-        ).content
-
-        embeddings = OpenAIEmbeddings()
-        docs = load_vdb().similarity_search(query, k=2)
-        rag_content = ' '.join([doc.page_content for doc in docs])
-
+#       query_llm = ChatOpenAI(model='gpt-3.5-turbo-1106')
+#        query = query_llm.predict_messages(
+#            [
+#                AIMessage(content=response.content),
+#                HumanMessage(content="Create a question for user to deepen the learning from the report")
+#            ]
+#        ).content
+#
+#        embeddings = OpenAIEmbeddings()
+#        docs = load_vdb().similarity_search(query, k=2)
+#        rag_content = ' '.join([doc.page_content for doc in docs])
+#
     #    rag_llm = load_llm(stream_handler)
     #    rag_response = rag_llm(
     #        [
@@ -354,10 +354,10 @@ Final prompt: You must generate report even though you think the conversation hi
 #| Title  | Description    |     How it helps?      |
 #|------------------------|-----------------------|--------------------------------------------|
 #| Video title with hyperlink | Description of the video | How it helps the user               |
-"""),
+#"""),
 #            ]
 #        )
-    #final_response = response.content + "\n"
+    final_response = response.content + "\n" + rag_response.content
  #       st.session_state.messages.append(ChatMessage(role="assistant", content=final_response.replace("$", r"\$")))
 import streamlit as st
 
